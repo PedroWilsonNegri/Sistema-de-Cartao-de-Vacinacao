@@ -1,7 +1,7 @@
 /*Um sistema de cadastro básico, onde um paciente deve inserir seus dados de:
-Nome, Idade, Data de Nascimento e CPF. Após o cadastro, o paciente deve ser
-solicitado o nome de uma vacina necessária ou da vacina desejada a ser tomada,
-onde a vacina deve apresentar, Lote, Validade e Fabricante Laboratorial.
+Nome, Idade, Data de Nascimento e CPF. Após o cadastro, é solicitado ao paciente
+o nome de uma vacina necessária ou da vacina desejada a ser tomada,
+onde a vacina irá apresentar, Lote, Validade e Fabricante Laboratorial.
 Assim solicitando uma data de agendamento para a aplicação, juntamente com o
 local e horário.*/
 
