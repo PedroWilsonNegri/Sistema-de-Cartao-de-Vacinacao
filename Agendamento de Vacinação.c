@@ -29,7 +29,8 @@ typedef struct
 {
     Vacina vacinas[6]; 
     int numVacinas;
-} BancoDeDados;
+} BancoDeDados; //frio por que eu não estava com paciência pra criar um banco de dados variável.
+				//mas vai ter um banco de dados quente no código de histórico de vacinas
 
 const char *vacinaNomes[] = {"Gripe", "Hepatite A e B", "Anti-Rabica", "Anti-Tetanica", "BCG", "Covid"};
 const char *vacinaLots[] = {"12345", "67890", "ABCDE", "FGHI", "JKLMN", "OPQR"};
