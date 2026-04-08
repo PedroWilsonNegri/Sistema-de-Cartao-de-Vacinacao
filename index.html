@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel de Vacinação</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #e3f2fd, #ffffff);
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    width: 300px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+input, select, button {
+    margin: 5px 0;
+    padding: 8px;
+    width: 100%;
+}
+
+button {
+    cursor: pointer;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+}
+
+/* ================== TABELA ================== */
+
+#historico {
+    margin-top: 10px;
+}
+
+#historico table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#historico th, #historico td {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+#historico th {
+    background: #1976d2;
+    color: white;
+}
+
+#historico tr:nth-child(even) {
+    background: #f2f2f2;
+}
+
+/* ================== POPUP ================== */
+
+#popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+        <h3>Cadastro</h3>
+        <input id="nome" placeholder="Nome">
+        <input id="idade" placeholder="Idade">
+        <input id="data" type="date">
+        <input id="cpf" placeholder="CPF">
+        <button onclick="cadastrarPaciente()">Cadastrar</button>
+    </div>
+
+    <div class="card">
+        <h3>Agendar</h3>
+        <select id="vacinas"></select>
+        <input id="dataVacina" type="date">
+        <input id="local" placeholder="Local">
+        <input id="hora" type="time">
+        <button onclick="agendarVacina()">Agendar</button>
+    </div>
+
+    <div class="card" style="width:100%;">
+        <h3>Histórico</h3>
+        <button onclick="mostrarHistorico()">Atualizar</button>
+        <div id="historico"></div>
+    </div>
+
+</div>
+
+<div id="popup">
+    <div class="popup-content">
+        <p id="popup-text"></p>
+        <button onclick="fecharPopup()">OK</button>
+    </div>
+</div>
+
+<script>
+
+let paciente = {};
+let historico = [];
+
+const vacinaNomes = [
+    "BCG","Hepatite B","Pentavalente","Poliomielite",
+    "Febre Amarela","Triplice Viral","Covid-19",
+    "HPV","Influenza","DTP"
+];
+
+// carregar select
+window.onload = function() {
+    const select = document.getElementById("vacinas");
+    vacinaNomes.forEach((v, i) => {
+        let opt = document.createElement("option");
+        opt.value = i;
+        opt.innerText = v;
+        select.appendChild(opt);
+    });
+};
+
+function formatarData(e) {
+    if (!e) return "Data invalida";
+    let partes = e.split("-");
+    if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    return "Data invalida";
+}/${n.slice(2,4)}/${n.slice(4)}` : "Data invalida";
+}
+
+function formatarCPF(e) {
+    let n = e.replace(/\D/g, "").slice(0,11);
+    return n.length === 11 ? `${n.slice(0,3)}.${n.slice(3,6)}.${n.slice(6,9)}-${n.slice(9)}` : "CPF invalido";
+}
+
+function mostrarPopup(msg) {
+    document.getElementById("popup-text").innerText = msg;
+    document.getElementById("popup").style.display = "flex";
+}
+
+function fecharPopup() {
+    document.getElementById("popup").style.display = "none";
+}
+
+function cadastrarPaciente() {
+    paciente.nome = document.getElementById("nome").value;
+    paciente.idade = parseInt(document.getElementById("idade").value) || 0;
+    paciente.dataNascimento = formatarData(document.getElementById("data").value);
+    paciente.cpf = formatarCPF(document.getElementById("cpf").value);
+
+    mostrarPopup("Paciente cadastrado!");
+}
+
+function registrarVacina(nome, data, status) {
+    historico.push({ nome, data, status });
+}
+
+function mostrarHistorico() {
+    let div = document.getElementById("historico");
+
+    if (historico.length === 0) {
+        div.innerHTML = "Nenhuma vacina";
+        return;
+    }
+
+    let tabela = `<table>
+    <tr><th>#</th><th>Vacina</th><th>Data</th><th>Status</th></tr>`;
+
+    historico.forEach((v,i)=>{
+        tabela += `<tr><td>${i+1}</td><td>${v.nome}</td><td>${v.data}</td><td>${v.status}</td></tr>`;
+    });
+
+    tabela += `</table>`;
+    div.innerHTML = tabela;
+}
+
+function agendarVacina() {
+    let idx = document.getElementById("vacinas").value;
+    let data = formatarData(document.getElementById("dataVacina").value);
+
+    registrarVacina(vacinaNomes[idx], data, "Agendada");
+
+    mostrarPopup("Vacina agendada!");
+}
+
+</script>
+
+</body>
+</html>
