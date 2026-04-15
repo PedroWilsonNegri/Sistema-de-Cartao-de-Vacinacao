@@ -11,13 +11,13 @@ typedef struct {
     int idade;
     char vacina[100];
     char data[20];
-    int aplicada; // 0 = n„o, 1 = sim
+    int aplicada; // 0 = n√£o, 1 = sim
 } Pessoa;
 
 Pessoa lista[MAX];
 int total = 0;
 
-// FunÁ„o para cadastrar e agendar
+// Fun√ß√£o para cadastrar e agendar
 void cadastrar() {
     if (total >= MAX) {
         printf("Limite de cadastros atingido!\n");
@@ -49,7 +49,7 @@ void cadastrar() {
     printf("Cadastro realizado com sucesso!\n");
 }
 
-// Funcion·rio registra aplicaÁ„o pelo CPF do cliente
+// Funcion√°rio registra aplica√ß√£o pelo CPF do cliente
 void aplicarVacina() {
     char cpfBusca[20];
     int encontrado = 0;
