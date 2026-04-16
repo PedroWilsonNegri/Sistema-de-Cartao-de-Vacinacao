@@ -43,12 +43,7 @@ button {
     border-radius: 6px;
 }
 
-/* ================== TABELA ================== */
-
-#historico {
-    margin-top: 10px;
-}
-
+/* tabela */
 #historico table {
     width: 100%;
     border-collapse: collapse;
@@ -64,12 +59,7 @@ button {
     color: white;
 }
 
-#historico tr:nth-child(even) {
-    background: #f2f2f2;
-}
-
-/* ================== POPUP ================== */
-
+/* popup */
 #popup {
     position: fixed;
     top: 0;
@@ -87,7 +77,6 @@ button {
     padding: 20px;
     border-radius: 10px;
 }
-
 </style>
 </head>
 
@@ -102,6 +91,11 @@ button {
         <input id="data" type="date">
         <input id="cpf" placeholder="CPF">
         <button onclick="cadastrarPaciente()">Cadastrar</button>
+    </div>
+
+    <div class="card">
+        <h3>Selecionar Paciente</h3>
+        <select id="pacientes"></select>
     </div>
 
     <div class="card">
@@ -130,8 +124,8 @@ button {
 
 <script>
 
-let paciente = {};
-let historico = [];
+let pacientes = JSON.parse(localStorage.getItem("pacientes")) || [];
+let historico = JSON.parse(localStorage.getItem("historico")) || [];
 
 const vacinaNomes = [
     "BCG","Hepatite B","Pentavalente","Poliomielite",
@@ -139,8 +133,12 @@ const vacinaNomes = [
     "HPV","Influenza","DTP"
 ];
 
-// carregar select
 window.onload = function() {
+    carregarVacinas();
+    atualizarListaPacientes();
+};
+
+function carregarVacinas() {
     const select = document.getElementById("vacinas");
     vacinaNomes.forEach((v, i) => {
         let opt = document.createElement("option");
@@ -148,21 +146,31 @@ window.onload = function() {
         opt.innerText = v;
         select.appendChild(opt);
     });
-};
+}
+
+function atualizarListaPacientes() {
+    let select = document.getElementById("pacientes");
+    select.innerHTML = "";
+
+    pacientes.forEach((p, i) => {
+        let opt = document.createElement("option");
+        opt.value = i;
+        opt.innerText = `${p.nome} (${p.cpf})`;
+        select.appendChild(opt);
+    });
+}
 
 function formatarData(e) {
-    if (!e) return "Data invalida";
+    if (!e) return "Data inválida";
     let partes = e.split("-");
-    if (partes.length === 3) {
-        return `${partes[2]}/${partes[1]}/${partes[0]}`;
-    }
-    return "Data invalida";
-}/${n.slice(2,4)}/${n.slice(4)}` : "Data invalida";
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
 function formatarCPF(e) {
     let n = e.replace(/\D/g, "").slice(0,11);
-    return n.length === 11 ? `${n.slice(0,3)}.${n.slice(3,6)}.${n.slice(6,9)}-${n.slice(9)}` : "CPF invalido";
+    return n.length === 11 
+        ? `${n.slice(0,3)}.${n.slice(3,6)}.${n.slice(6,9)}-${n.slice(9)}`
+        : null;
 }
 
 function mostrarPopup(msg) {
@@ -175,16 +183,67 @@ function fecharPopup() {
 }
 
 function cadastrarPaciente() {
-    paciente.nome = document.getElementById("nome").value;
-    paciente.idade = parseInt(document.getElementById("idade").value) || 0;
-    paciente.dataNascimento = formatarData(document.getElementById("data").value);
-    paciente.cpf = formatarCPF(document.getElementById("cpf").value);
+    let nome = document.getElementById("nome").value.trim();
+    let idade = parseInt(document.getElementById("idade").value);
+    let data = document.getElementById("data").value;
+    let cpf = formatarCPF(document.getElementById("cpf").value);
+
+    if (!nome || !cpf) {
+        mostrarPopup("Preencha nome e CPF válido!");
+        return;
+    }
+
+    pacientes.push({
+        nome,
+        idade,
+        dataNascimento: formatarData(data),
+        cpf
+    });
+
+    localStorage.setItem("pacientes", JSON.stringify(pacientes));
+    atualizarListaPacientes();
+
+    document.getElementById("nome").value = "";
+    document.getElementById("idade").value = "";
+    document.getElementById("data").value = "";
+    document.getElementById("cpf").value = "";
 
     mostrarPopup("Paciente cadastrado!");
 }
 
-function registrarVacina(nome, data, status) {
-    historico.push({ nome, data, status });
+function agendarVacina() {
+    let pacienteIdx = document.getElementById("pacientes").value;
+    if (pacienteIdx === "") {
+        mostrarPopup("Selecione um paciente!");
+        return;
+    }
+
+    let vacinaIdx = document.getElementById("vacinas").value;
+    let data = formatarData(document.getElementById("dataVacina").value);
+    let local = document.getElementById("local").value;
+    let hora = document.getElementById("hora").value;
+
+    if (!data || !local || !hora) {
+        mostrarPopup("Preencha todos os campos!");
+        return;
+    }
+
+    historico.push({
+        paciente: pacientes[pacienteIdx].nome,
+        vacina: vacinaNomes[vacinaIdx],
+        data,
+        hora,
+        local,
+        status: "Agendada"
+    });
+
+    localStorage.setItem("historico", JSON.stringify(historico));
+
+    document.getElementById("dataVacina").value = "";
+    document.getElementById("local").value = "";
+    document.getElementById("hora").value = "";
+
+    mostrarPopup("Vacina agendada!");
 }
 
 function mostrarHistorico() {
@@ -196,23 +255,30 @@ function mostrarHistorico() {
     }
 
     let tabela = `<table>
-    <tr><th>#</th><th>Vacina</th><th>Data</th><th>Status</th></tr>`;
+    <tr>
+        <th>#</th>
+        <th>Paciente</th>
+        <th>Vacina</th>
+        <th>Data</th>
+        <th>Hora</th>
+        <th>Local</th>
+        <th>Status</th>
+    </tr>`;
 
     historico.forEach((v,i)=>{
-        tabela += `<tr><td>${i+1}</td><td>${v.nome}</td><td>${v.data}</td><td>${v.status}</td></tr>`;
+        tabela += `<tr>
+            <td>${i+1}</td>
+            <td>${v.paciente}</td>
+            <td>${v.vacina}</td>
+            <td>${v.data}</td>
+            <td>${v.hora}</td>
+            <td>${v.local}</td>
+            <td>${v.status}</td>
+        </tr>`;
     });
 
     tabela += `</table>`;
     div.innerHTML = tabela;
-}
-
-function agendarVacina() {
-    let idx = document.getElementById("vacinas").value;
-    let data = formatarData(document.getElementById("dataVacina").value);
-
-    registrarVacina(vacinaNomes[idx], data, "Agendada");
-
-    mostrarPopup("Vacina agendada!");
 }
 
 </script>
